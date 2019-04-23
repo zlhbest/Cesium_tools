@@ -105,7 +105,7 @@ function MouseControlCameradirection (mousePosition,Oldheading,Oldpitch,timeM)
  }
 function canvasRight(Oldheading)
 {
-    Oldheading = Oldheading + 0.01;
+    Oldheading = this.viewer.scene.camera.heading + 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
             heading :Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
@@ -114,7 +114,7 @@ function canvasRight(Oldheading)
 }
 function canvasLeft(Oldheading)
 {
-    Oldheading = Oldheading - 0.01;
+    Oldheading = this.viewer.scene.camera.heading - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
             heading :Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
@@ -123,7 +123,7 @@ function canvasLeft(Oldheading)
 }
 function canvasUp(Oldpitch)
 {
-    Oldpitch = Oldpitch - 0.01;
+    Oldpitch = this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
             pitch : Oldpitch,//方向和水平平面的夹角   俯仰角
@@ -132,7 +132,7 @@ function canvasUp(Oldpitch)
 }
 function canvasDown(Oldpitch)
 {
-    Oldpitch = Oldpitch + 0.01;
+    Oldpitch = this.viewer.scene.camera.pitch + 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
             pitch : Oldpitch,//方向和水平平面的夹角   俯仰角
