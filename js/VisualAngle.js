@@ -23,7 +23,7 @@ function GetMouseDownCoordinate()
    
 }
 //用于相机视角跟随鼠标
-function MouseControlCamera(isOpen)
+function MouseControlCamera(isOpen)//cesiumContainer为容器id
 {
     if(isOpen)
     {
@@ -34,23 +34,119 @@ function MouseControlCamera(isOpen)
         var handler = new Cesium.ScreenSpaceEventHandler(canvas);
         //用于检测鼠标是否是出现在canvas里面，然后进行后续操作
         var Oldheading = this.viewer.scene.camera.heading;
-        var Oldpitch = this.viewer.scene.camera.pitch;
+        var Oldpitch = this.viewer.scene.camera.pitch; 
+        // var set = document.getElementById(cesiumContainer);
+
+        // set.onmouseout = function ()
+        // {
+        //     SetOldCameraSetting();
+        // }
+        // function SetOldCameraSetting()
+        // {
+        //     Oldheading = this.viewer.scene.camera.heading;
+        //     Oldpitch = this.viewer.scene.camera.pitch; 
+        // }
+        var timeM = null;
         handler.setInputAction(function(movement) {
-            MouseControlCameradirection(movement.endPosition,Oldheading,Oldpitch);
+            MouseControlCameradirection(movement.endPosition,Oldheading,Oldpitch,timeM);
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-        
     }
 }
-function MouseControlCameradirection (mousePosition,Oldheading,Oldpitch)
+function MouseControlCameradirection (mousePosition,Oldheading,Oldpitch,timeM)
 {
-    // var Oldheading = this.viewer.scene.camera.heading;
-    // var Oldpitch = this.viewer.scene.camera.pitch;
-    var assumeDistance = 1000;
+    if(timeM!=null)
+    {
+        window.clearInterval(timeM); 
+    }
     var width = this.viewer.canvas.clientWidth;
     var height = this.viewer.canvas.clientHeight;
-    var headingAngle;////偏航角
-    var pitchAngle;//俯仰角
+    var cameraRotateType = 0;
+    if(Math.abs(mousePosition.x - width) <50) //靠近canvas的右边。镜头应该往右
+    {
+        cameraRotateType = 1;
+    }
+    else if(Math.abs(mousePosition.y - height) <50)//靠近canvas的下面
+    {
+        cameraRotateType = 2;
+    }
+    else if( (mousePosition.x) <50)//靠近canvas的左边
+    {
+        cameraRotateType = 3;
+    }
+    else if ((mousePosition.y) <50)//靠近canvas的上面
+    {
+        cameraRotateType = 4;
+    }
+    else 
+    {
+        cameraRotateType = 5;
+    }
+    switch(cameraRotateType)
+    {
+        case 1:
+        timeM= window.setInterval(canvasRight(Oldheading),10);
+            break;
+        case 2:
+        timeM= window.setInterval(canvasLeft(Oldheading),10);
+            break;
+        case 3:
+        timeM= window.setInterval(canvasUp(Oldpitch),10);
+            break;
+        case 4:
+        timeM=window.setInterval(canvasDown(Oldpitch),10);
+            break;
+        case 5:
+            functionMainForCamera(mousePosition,Oldheading,Oldpitch);
+            break;
+        default :
+            break;
+    }
+    
+ }
+function canvasRight(Oldheading)
+{
+    Oldheading = Oldheading + 0.01;
+    this.viewer.scene.camera.setView({
+        orientation: {
+            heading :Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+        }
+       });
+}
+function canvasLeft(Oldheading)
+{
+    Oldheading = Oldheading - 0.01;
+    this.viewer.scene.camera.setView({
+        orientation: {
+            heading :Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+        }
+       });
+}
+function canvasUp(Oldpitch)
+{
+    Oldpitch = Oldpitch - 0.01;
+    this.viewer.scene.camera.setView({
+        orientation: {
+            pitch : Oldpitch,//方向和水平平面的夹角   俯仰角
+        }
+       });
+}
+function canvasDown(Oldpitch)
+{
+    Oldpitch = Oldpitch + 0.01;
+    this.viewer.scene.camera.setView({
+        orientation: {
+            pitch : Oldpitch,//方向和水平平面的夹角   俯仰角
+        }
+       });
+}
+function functionMainForCamera(mousePosition,Oldheading,Oldpitch)
+{
+    var width = this.viewer.canvas.clientWidth;
+    var height = this.viewer.canvas.clientHeight;
     var cameraPostionOnScreen = new Cesium.Cartesian2(width/2, height/2);
+    var assumeDistance = 1000;
+    var headingAngle;////偏航角
+    var pitchAngle;//俯仰角    
     var x = mousePosition.x - cameraPostionOnScreen.x;
     var sinx = x/assumeDistance;
     headingAngle = Math.asin(sinx);
@@ -78,9 +174,6 @@ function MouseControlCameradirection (mousePosition,Oldheading,Oldpitch)
             }
            });
     }
-   
-
-
 }
 //此方法仅限于在键盘控制位移
 function KeyboardControlPerspective()
