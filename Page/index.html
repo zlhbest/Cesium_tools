@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The bast one</title>
+    <script src="../Cesium/Cesium.js"></script>
+    <script src="../js/Utils.js"></script>
+    <!--这里是-->
+    <link rel="stylesheet" href="../Cesium/Widgets/widgets.css" />
+    <link rel="stylesheet" href="../css/index.css"/>
+</head>
+<body>
+     <!-- 主体框架 -->
+ <div id = "everything">
+	<!--头顶标题栏-->
+	<div id = "title" ></div>
+	<!--分割线-->
+	<HR style="FILTER: progid:DXImageTransform.Microsoft.Glow(color=#987cb9,strength=10)" width="80%" color=#987cb9 SIZE=1>
+	<!--主体内容栏-->
+	<div id = "center">
+		<!--侧边功能栏-->
+		<div id = "functionBar">
+			<div class="functionBar" id="lightAnalysis" onclick="ShowBuilder()">
+				<p>日照分析</p>
+			</div>
+			<div class="functionBar" id="start" onclick="SetTimeFull()">
+				<p>开始</p>
+			</div>
+			<div class="functionBar" id="point" onclick="SetTimeFull()">
+				<p>点击获取坐标</p>
+			</div>
+		</div>
+		<!--Cesium功能实现栏-->
+		<div id = "cesiumContainer">
+			<div id= "loading">
+				<div id= "block"></div>
+				<img src="../Cesium/Assets/Images/ajax-loader.gif">
+			</div>
+		</div>
+	</div>
+</div> 
+    <script src="../js/InitCesiumMap.js"></script>
+    <script src="../js/addBuilder.js"></script>
+	<script src="../js/SunshineAnalysis.js"></script>
+	<script src="../js/VisualAngle.js"></script>
+    <script src="../js/Init.js"></script>
+</body>
+</html>
+   
