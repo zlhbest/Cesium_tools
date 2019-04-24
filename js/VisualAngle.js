@@ -2,6 +2,8 @@ function VisualAngle(viewer)
 {
     var VisualAngle = new Object;
     VisualAngle.viewer = viewer;
+    VisualAngle.Oldheading = Oldheading;//目前相机的主轴
+    VisualAngle.Oldpitch = Oldpitch;
     VisualAngle.GetMouseDownCoordinate = GetMouseDownCoordinate;//获取鼠标位置
     VisualAngle.KeyboardControlPerspective = KeyboardControlPerspective;//键盘控制相机位置
     VisualAngle.MouseControlCamera = MouseControlCamera;//鼠标控制相机视角
@@ -22,42 +24,34 @@ function GetMouseDownCoordinate()
 {
    
 }
+var Oldheading = null;
+var Oldpitch = null;
 //用于相机视角跟随鼠标
 function MouseControlCamera(isOpen)//cesiumContainer为容器id
 {
+    var canvas = viewer.canvas;
+    var handler = new Cesium.ScreenSpaceEventHandler(canvas);
     if(isOpen)
     {
         //1、如果是开启状态，鼠标消失，直接定位到相机视角
         //屏蔽掉相应的功能
         ShieldMouseFunction();
-        var canvas = viewer.canvas;
-        var handler = new Cesium.ScreenSpaceEventHandler(canvas);
         //用于检测鼠标是否是出现在canvas里面，然后进行后续操作
-        var Oldheading = this.viewer.scene.camera.heading;
-        var Oldpitch = this.viewer.scene.camera.pitch; 
-        // var set = document.getElementById(cesiumContainer);
-
-        // set.onmouseout = function ()
-        // {
-        //     SetOldCameraSetting();
-        // }
-        // function SetOldCameraSetting()
-        // {
-        //     Oldheading = this.viewer.scene.camera.heading;
-        //     Oldpitch = this.viewer.scene.camera.pitch; 
-        // }
-        var timeM = null;
+        this.Oldheading = this.viewer.scene.camera.heading;
+        this.Oldpitch = this.viewer.scene.camera.pitch; 
+        //var timeM = null;
         handler.setInputAction(function(movement) {
-            MouseControlCameradirection(movement.endPosition,Oldheading,Oldpitch,timeM);
+            MouseControlCameradirection(movement.endPosition);
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
     }
-}
-function MouseControlCameradirection (mousePosition,Oldheading,Oldpitch,timeM)
-{
-    if(timeM!=null)
+    else
     {
-        window.clearInterval(timeM); 
+        handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
     }
+}
+function MouseControlCameradirection (mousePosition)
+{
+
     var width = this.viewer.canvas.clientWidth;
     var height = this.viewer.canvas.clientHeight;
     var cameraRotateType = 0;
@@ -84,58 +78,60 @@ function MouseControlCameradirection (mousePosition,Oldheading,Oldpitch,timeM)
     switch(cameraRotateType)
     {
         case 1:
-        timeM= window.setInterval(canvasRight(Oldheading),10);
+            canvasRight();
             break;
         case 2:
-        timeM= window.setInterval(canvasLeft(Oldheading),10);
+            canvasLeft();
             break;
         case 3:
-        timeM= window.setInterval(canvasUp(Oldpitch),10);
+            canvasUp();
             break;
         case 4:
-        timeM=window.setInterval(canvasDown(Oldpitch),10);
+            canvasDown();
             break;
         case 5:
-            functionMainForCamera(mousePosition,Oldheading,Oldpitch);
+            functionMainForCamera(mousePosition,this.Oldheading,this.Oldpitch);
             break;
         default :
             break;
     }
     
  }
-function canvasRight(Oldheading)
+function canvasRight()
 {
-    Oldheading = this.viewer.scene.camera.heading + 0.01;
+    this.Oldheading = this.viewer.scene.camera.heading + 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
-            heading :Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+            heading :this.Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+            pitch:this.Oldpitch,
         }
        });
 }
-function canvasLeft(Oldheading)
+function canvasLeft()
 {
-    Oldheading = this.viewer.scene.camera.heading - 0.01;
+    this.Oldheading = this.viewer.scene.camera.heading - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
-            heading :Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+            heading :this.Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+            pitch:this.Oldpitch,
         }
        });
 }
-function canvasUp(Oldpitch)
+function canvasUp()
 {
-    Oldpitch = this.viewer.scene.camera.pitch - 0.01;
+    this.Oldpitch = this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
-            pitch : Oldpitch,//方向和水平平面的夹角   俯仰角
+            pitch : this.Oldpitch,//方向和水平平面的夹角   俯仰角
         }
        });
 }
-function canvasDown(Oldpitch)
+function canvasDown()
 {
-    Oldpitch = this.viewer.scene.camera.pitch + 0.01;
+    this.Oldpitch = this.viewer.scene.camera.pitch + 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
-            pitch : Oldpitch,//方向和水平平面的夹角   俯仰角
+            pitch : this.Oldpitch,//方向和水平平面的夹角   俯仰角
         }
        });
 }
