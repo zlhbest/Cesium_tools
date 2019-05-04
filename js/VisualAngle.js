@@ -4,7 +4,7 @@ function VisualAngle(viewer)
     VisualAngle.viewer = viewer;
     VisualAngle.Oldheading = Oldheading;//目前相机的主轴
     VisualAngle.Oldpitch = Oldpitch;
-    VisualAngle.GetMouseDownCoordinate = GetMouseDownCoordinate;//获取鼠标位置
+    VisualAngle.GetMouseDownCoordinateOnBuilder = GetMouseDownCoordinateOnBuilder;//获取鼠标位置,鼠标与建筑物和椭球的焦点
     VisualAngle.KeyboardControlPerspective = KeyboardControlPerspective;//键盘控制相机位置
     VisualAngle.MouseControlCamera = MouseControlCamera;//鼠标控制相机视角
     return VisualAngle;
@@ -20,8 +20,38 @@ function ShieldMouseFunction()
 }
 //键盘监听一下上下左右，将这个封装为一个方法，这个方法实现后的效果，开启这个函数后，鼠标点击的第一个位置就是你的视点，然后相机就变为那个位置
 //1、鼠标点击任意位置，获得点击位置的坐标
-function GetMouseDownCoordinate()
+//注释：这里鼠标的位置一共有好几个，1、鼠标的屏幕坐标，2、世界坐标，通过 viewer.scene.camera.pickEllipsoid(movement.position, ellipsoid)获取，可以获取当前点击视线与椭球面相交处的坐标
+//3、场景坐标，4、地标坐标
+function GetMouseDownCoordinateOnBuilder()//这里应该是鼠标添加监听还是说直接获取，函数重载，如果函数没有传值的话，走的就是鼠标的点击监听，如果传入的是点，那么就按照传入的计算。
 {
+    var handler = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas);
+    handler.setInputAction(function (movement) {
+        //var position = viewer.scene.camera.pickEllipsoid(movement.position, this.viewer.scene.globe.ellipsoid);//获取的是椭球
+        var position = viewer.scene.pickPosition(movement.position);//获取的是
+        this.viewer.entities.add({
+            id:"point",
+            position:position,
+            point:{
+                pixelSize: 4,
+                color: Cesium.Color.RED,
+                outlineColor: Cesium.Color.BLACK,
+                outlineWidth: 2
+            }
+        });
+        //SetCameraPosition(position);
+        SunshineAnalysis.PointSunshineAnalysis(position);
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+}
+function SetCameraPosition(position)
+{
+    this.viewer.scene.camera.flyTo({
+        destination :position,
+        orientation : {
+            heading : Cesium.Math.toRadians(175.0),
+            pitch : Cesium.Math.toRadians(-35.0),
+            roll : 0.0
+        }
+    });
    
 }
 var Oldheading = null;

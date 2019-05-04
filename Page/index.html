@@ -20,15 +20,18 @@
 	<div id = "center">
 		<!--侧边功能栏-->
 		<div id = "functionBar">
-			<div class="functionBar" id="lightAnalysis" onclick="ShowBuilder()">
+			<div class="functionBar" id="lightAnalysis" onclick="show()">
 				<p>日照分析</p>
 			</div>
 			<div class="functionBar" id="start" onclick="SetTimeFull()">
 				<p>开始</p>
 			</div>
-			<div class="functionBar" id="point" onclick="SetTimeFull()">
+			<div class="functionBar" id="point" onclick="MouseClick()">
 				<p>点击获取坐标</p>
 			</div>
+			<div class="functionBar" id="point" onclick="MouseClick()">
+				<p>点与太阳位置划线</p>
+			</div>	
 		</div>
 		<!--Cesium功能实现栏-->
 		<div id = "cesiumContainer">
