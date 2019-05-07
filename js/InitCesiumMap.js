@@ -1,4 +1,4 @@
-function OnLoad(Cesium)
+function OnLoad()
 {
     //这个文件用于初始化map使用
     viewer = new Cesium.Viewer("cesiumContainer",{

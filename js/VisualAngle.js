@@ -4,9 +4,12 @@ function VisualAngle(viewer)
     VisualAngle.viewer = viewer;
     VisualAngle.Oldheading = Oldheading;//目前相机的主轴
     VisualAngle.Oldpitch = Oldpitch;
+    VisualAngle.MousePosition = MousePosition;
+    VisualAngle.wuti = Wuti;
     VisualAngle.GetMouseDownCoordinateOnBuilder = GetMouseDownCoordinateOnBuilder;//获取鼠标位置,鼠标与建筑物和椭球的焦点
     VisualAngle.KeyboardControlPerspective = KeyboardControlPerspective;//键盘控制相机位置
     VisualAngle.MouseControlCamera = MouseControlCamera;//鼠标控制相机视角
+    
     return VisualAngle;
 }
 function ShieldMouseFunction()
@@ -22,15 +25,21 @@ function ShieldMouseFunction()
 //1、鼠标点击任意位置，获得点击位置的坐标
 //注释：这里鼠标的位置一共有好几个，1、鼠标的屏幕坐标，2、世界坐标，通过 viewer.scene.camera.pickEllipsoid(movement.position, ellipsoid)获取，可以获取当前点击视线与椭球面相交处的坐标
 //3、场景坐标，4、地标坐标
-function GetMouseDownCoordinateOnBuilder()//这里应该是鼠标添加监听还是说直接获取，函数重载，如果函数没有传值的话，走的就是鼠标的点击监听，如果传入的是点，那么就按照传入的计算。
+var MousePosition = null;
+var Wuti = null;
+function GetMouseDownCoordinateOnBuilder(wuti)//这里应该是鼠标添加监听还是说直接获取，函数重载，如果函数没有传值的话，走的就是鼠标的点击监听，如果传入的是点，那么就按照传入的计算。
 {
+    Wuti = wuti;
+   
     var handler = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas);
     handler.setInputAction(function (movement) {
+        clearInterval(showLogin);
         //var position = viewer.scene.camera.pickEllipsoid(movement.position, this.viewer.scene.globe.ellipsoid);//获取的是椭球
-        var position = viewer.scene.pickPosition(movement.position);//获取的是
+        this.MousePosition = viewer.scene.pickPosition(movement.position);//获取的是
+        this.MousePosition.z = this.MousePosition.z +5;
         this.viewer.entities.add({
             id:"point",
-            position:position,
+            position:this.MousePosition,
             point:{
                 pixelSize: 4,
                 color: Cesium.Color.RED,
@@ -38,9 +47,15 @@ function GetMouseDownCoordinateOnBuilder()//这里应该是鼠标添加监听还
                 outlineWidth: 2
             }
         });
+        //SunshineAnalysis.PointSunshineAnalysis(this.MousePosition,wuti);
         //SetCameraPosition(position);
-        SunshineAnalysis.PointSunshineAnalysis(position);
+        setInterval(showLogin,"1000");
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+}
+function showLogin()
+{
+    //console.log(Wuti.id);
+    SunshineAnalysis.PointSunshineAnalysis(this.MousePosition);
 }
 function SetCameraPosition(position)
 {
@@ -276,3 +291,26 @@ function KeyboardControlPerspective()
             }
         });
 }
+
+
+
+
+
+
+
+// result = result || new Cesium.JulianDate();
+// currentTime.clone(result);
+// var posVector = Cesium.Cartesian3.normalize(position, scratchFindDaytimeCartesianA);
+// var highestDot = -2;   
+// var sunInertial = Cesium.Simon1994PlanetaryPositions.computeSunPositionInEarthInertialFrame(currentTime, scratchFindDaytimeCartesianB);
+// var sampleTime = Cesium.JulianDate.addHours(currentTime, -12, scratchFindDaytimeDateA);
+// for (var h = 0; h < 24; ++h) {
+// var temeTransform = Cesium.Transforms.computeTemeToPseudoFixedMatrix(sampleTime, scratchFindDaytimeMatrixA);
+// var sunPositionWc = Cesium.Matrix3.multiplyByVector(temeTransform, sunInertial, scratchFindDaytimeCartesianC);
+// var sunVector = Cesium.Cartesian3.normalize(sunPositionWc, sunPositionWc);
+// var dotProduct = Cesium.Cartesian3.dot(posVector, sunVector);
+// if (dotProduct > highestDot) {
+// highestDot = dotProduct;
+// sampleTime.clone(result);
+// }
+// Cesium.JulianDate.addHours(sampleTime, 1, sampleTime);

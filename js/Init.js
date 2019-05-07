@@ -1,5 +1,5 @@
 var viewer = OnLoad(Cesium);
-ShowBuilder();
+var wuti = ShowBuilder();
 var SunshineAnalysis = new SunshineAnalysis(viewer);
 var VisualAngle = new VisualAngle(viewer);
 SunshineAnalysis.OpenSun();
@@ -18,7 +18,8 @@ function SetTimeFull()
 }
 function MouseClick()
 {
-     VisualAngle.GetMouseDownCoordinateOnBuilder();
+    //VisualAngle.wuti = wuti;
+     VisualAngle.GetMouseDownCoordinateOnBuilder(wuti);
 }
 function show()
 {

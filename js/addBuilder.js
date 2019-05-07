@@ -2,13 +2,14 @@
   function ShowBuilder()
   {
     LoadingShow();
-    var scene=viewer.scene;
+    //var scene=viewer.scene;
     var position = Cesium.Cartesian3.fromDegrees(116.40387397 ,39.91488908,100);
     var heading = Cesium.Math.toRadians(0);
     var pitch = Cesium.Math.toRadians(0);
     var roll = Cesium.Math.toRadians(0.0);
     var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, new Cesium.HeadingPitchRoll(heading, pitch, roll));
     var entity = viewer.entities.add({
+      id:"builder",
       position : position,
       orientation : orientation,
       model : {
@@ -30,6 +31,6 @@
   //   }).otherwise(function(error){
   //   window.alert(error);
   //  });
-    
+    return entity;
   }
   
