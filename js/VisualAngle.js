@@ -21,6 +21,14 @@ function ShieldMouseFunction()
      this.viewer.scene.screenSpaceCameraController.enableTilt = false;//用户倾斜相机
      this.viewer.scene.screenSpaceCameraController.enableLook = false;//
 }
+function RestoreDefaultSettings()
+{
+    this.viewer.scene.screenSpaceCameraController.enableRotate = true;//旋转转换用户位置
+    this.viewer.scene.screenSpaceCameraController.enableTranslate = true;//用户在地图上平移
+    this.viewer.scene.screenSpaceCameraController.enableZoom = true;//控制放大缩小
+    this.viewer.scene.screenSpaceCameraController.enableTilt = true;//用户倾斜相机
+    this.viewer.scene.screenSpaceCameraController.enableLook = true;//
+}
 //键盘监听一下上下左右，将这个封装为一个方法，这个方法实现后的效果，开启这个函数后，鼠标点击的第一个位置就是你的视点，然后相机就变为那个位置
 //1、鼠标点击任意位置，获得点击位置的坐标
 //注释：这里鼠标的位置一共有好几个，1、鼠标的屏幕坐标，2、世界坐标，通过 viewer.scene.camera.pickEllipsoid(movement.position, ellipsoid)获取，可以获取当前点击视线与椭球面相交处的坐标
@@ -71,7 +79,7 @@ function SetCameraPosition(position)
 }
 var Oldheading = null;
 var Oldpitch = null;
-//用于相机视角跟随鼠标
+//用于相机视角跟随鼠标，视角控制
 function MouseControlCamera(isOpen)//cesiumContainer为容器id
 {
     var canvas = viewer.canvas;
@@ -91,7 +99,11 @@ function MouseControlCamera(isOpen)//cesiumContainer为容器id
     }
     else
     {
+        RestoreDefaultSettings();
         handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+        document.removeEventListener('keydown');
+        document.removeEventListener('keyup');
+        this.lviewer.clock.onTick.removeEventListener();
     }
 }
 function MouseControlCameradirection (mousePosition)
@@ -126,13 +138,13 @@ function MouseControlCameradirection (mousePosition)
             canvasRight();
             break;
         case 2:
-            canvasLeft();
+            canvasDown();
             break;
         case 3:
-            canvasUp();
+            canvasLeft();
             break;
         case 4:
-            canvasDown();
+            canvasUp();
             break;
         case 5:
             functionMainForCamera(mousePosition,this.Oldheading,this.Oldpitch);
@@ -144,39 +156,65 @@ function MouseControlCameradirection (mousePosition)
  }
 function canvasRight()
 {
-    this.Oldheading = this.viewer.scene.camera.heading + 0.01;
+    var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.heading) + 1
+    if(degrees>360)
+    {
+        degrees = degrees-360;
+    }
+    else if(degrees<0)
+    {
+        degrees = degrees+360;
+    }
+    this.Oldheading = Cesium.Math.toRadians(degrees);
     this.viewer.scene.camera.setView({
         orientation: {
-            heading :this.Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
-            pitch:this.Oldpitch,
+            heading : Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
+            pitch : this.Oldpitch,
+            roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
 }
 function canvasLeft()
 {
-    this.Oldheading = this.viewer.scene.camera.heading - 0.01;
+    var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.heading) - 1
+    if(degrees>360)
+    {
+        degrees = degrees-360;
+    }
+    else if(degrees<0)
+    {
+        degrees = degrees+360;
+    }
+    this.Oldheading = Cesium.Math.toRadians(degrees);
     this.viewer.scene.camera.setView({
         orientation: {
             heading :this.Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
-            pitch:this.Oldpitch,
+            pitch : this.Oldpitch,
+            roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
 }
 function canvasUp()
 {
-    this.Oldpitch = this.viewer.scene.camera.pitch - 0.01;
+    var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.pitch) + 1
+    this.Oldpitch = Cesium.Math.toRadians(degrees);//this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
+            heading :this.Oldheading ,
             pitch : this.Oldpitch,//方向和水平平面的夹角   俯仰角
+            roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
 }
 function canvasDown()
 {
-    this.Oldpitch = this.viewer.scene.camera.pitch + 0.01;
+    var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.pitch) - 1
+    this.Oldpitch = Cesium.Math.toRadians(degrees);//this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
+            heading :this.Oldheading ,
             pitch : this.Oldpitch,//方向和水平平面的夹角   俯仰角
+            roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
 }
@@ -266,10 +304,10 @@ function KeyboardControlPerspective()
             flags[flagName] = false;
         }
     }, false);
-    viewer.clock.onTick.addEventListener(function(clock) {
+    this.lviewer.clock.onTick.addEventListener(function(clock) {
             var camera = viewer.camera;
-            var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
-            var moveRate = cameraHeight / 100.0;
+           // var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
+            var moveRate = 5;
 
             if (flags.moveForward) {
              camera.moveForward(moveRate);

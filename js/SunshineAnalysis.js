@@ -78,7 +78,7 @@ function PointSunshineAnalysis(postion,wuti)//可以是二维的鼠标点，也�
         id:"1",
         polyline : {
             positions : arrowPositions,
-            width : 10,
+            width : 10, 
             followSurface : false,
             material : new Cesium.PolylineArrowMaterialProperty(Cesium.Color.WHITE)
         }
@@ -133,30 +133,6 @@ function jiance(start,end)
     if(isshowders)  console.log("在阴影中");
     else  console.log("不在阴影中");
     console.log(points);
-}
-function pickFromRay(start,end)
-{
-    console.log(wuti.id);
-    //var model = this.viewer.entities.getById("builder");
-    var objectsToExclude = [];
-    objectsToExclude.push(wuti);
-    var direction = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(end, start, new Cesium.Cartesian3()), new Cesium.Cartesian3());
-    var ray = new Cesium.Ray(start, direction);
-    var drillPick = false;
-    if (drillPick) {
-        results = this.viewer.scene.drillPickFromRay(ray, 10, objectsToExclude);
-    } else {
-        var result = this.viewer.scene.pickFromRay(ray, objectsToExclude);
-        if (Cesium.defined(result)) {
-           console.log("在阴影中");
-           this.viewer.entities.getById("1").polyline.material = new Cesium.PolylineArrowMaterialProperty(Cesium.Color.RED);
-        }
-        else
-        {
-            console.log("不在阴影中");
-            this.viewer.entities.getById("1").polyline.material = new Cesium.PolylineArrowMaterialProperty(Cesium.Color.YELLOW);
-        }
-    }
 }
 //这里的starttime是Cesium的时间并非Date的时间,和时间变化速率
 function TimeFlowAnyTime(startTime,EndTime,multiplier)

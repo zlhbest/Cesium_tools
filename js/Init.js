@@ -9,6 +9,7 @@ dateNow.setMinutes(0);
 dateNow.setSeconds(0);
 var date  =  new Cesium.JulianDate.fromDate(dateNow);//获取当前时间
 viewer.clock.currentTime = date;
+var isopen = true;
 //VisualAngle.KeyboardControlPerspective();
 //VisualAngle.MouseControlCamera(true);//这一步是实现键盘控制视角.
 //SunshineAnalysis.SetTimeFlow(timeType.NowTime);
@@ -25,4 +26,10 @@ function show()
 {
     SunshineAnalysis.OpenSun();
     SunshineAnalysis.OpenShadows();
+}
+function kz()
+{
+    VisualAngle.KeyboardControlPerspective();//鼠标控制
+    VisualAngle.MouseControlCamera(isopen);
+    isopen = !isopen;
 }
