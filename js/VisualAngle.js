@@ -55,9 +55,9 @@ function GetMouseDownCoordinateOnBuilder(wuti)//这里应该是鼠标添加监�
                 outlineWidth: 2
             }
         });
-        //SunshineAnalysis.PointSunshineAnalysis(this.MousePosition,wuti);
+        SunshineAnalysis.PointSunshineAnalysis(this.MousePosition);
         //SetCameraPosition(position);
-        setInterval(showLogin,"1000");
+       // setInterval(showLogin,"1000");
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 }
 function showLogin()
@@ -100,11 +100,13 @@ function MouseControlCamera(isOpen)//cesiumContainer为容器id
     else
     {
         RestoreDefaultSettings();
+
     }
 }
+var loop = null;
 function MouseControlCameradirection (mousePosition)
 {
-
+    clearInterval(loop);
     var width = this.viewer.canvas.clientWidth;
     var height = this.viewer.canvas.clientHeight;
     var cameraRotateType = 0;
@@ -131,16 +133,20 @@ function MouseControlCameradirection (mousePosition)
     switch(cameraRotateType)
     {
         case 1:
-            canvasRight();
+            loop = setInterval(canvasRight,"30");
+            //canvasRight();
             break;
         case 2:
-            canvasDown();
+            loop = setInterval(canvasDown,"30");
+            //canvasDown();
             break;
         case 3:
-            canvasLeft();
+            loop =  setInterval(canvasLeft,"30");
+            //canvasLeft();
             break;
         case 4:
-            canvasUp();
+            loop =  setInterval(canvasUp,"30");
+            //canvasUp();
             break;
         case 5:
             functionMainForCamera(mousePosition,this.Oldheading,this.Oldpitch);
@@ -165,7 +171,7 @@ function canvasRight()
     this.viewer.scene.camera.setView({
         orientation: {
             heading : Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
-            pitch : this.Oldpitch,
+            pitch : this.viewer.scene.camera.pitch,
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
@@ -185,7 +191,7 @@ function canvasLeft()
     this.viewer.scene.camera.setView({
         orientation: {
             heading :this.Oldheading ,//由北向东旋转的角度,目前是正北 偏航角
-            pitch : this.Oldpitch,
+            pitch : this.viewer.scene.camera.pitch,
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
@@ -196,7 +202,7 @@ function canvasUp()
     this.Oldpitch = Cesium.Math.toRadians(degrees);//this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
-            heading :this.Oldheading ,
+            heading :this.viewer.scene.camera.heading ,
             pitch : this.Oldpitch,//方向和水平平面的夹角   俯仰角
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
@@ -208,7 +214,7 @@ function canvasDown()
     this.Oldpitch = Cesium.Math.toRadians(degrees);//this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
         orientation: {
-            heading :this.Oldheading ,
+            heading :this.viewer.scene.camera.heading ,
             pitch : this.Oldpitch,//方向和水平平面的夹角   俯仰角
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
