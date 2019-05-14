@@ -79,9 +79,9 @@ function SetCameraPosition(position)
 }
 var Oldheading = null;
 var Oldpitch = null;
-//用于相机视角跟随鼠标，视角控制
+//用于相机视角跟随鼠标，视角控制这里的严重弊端就是在边缘到中心的时候会出现强烈的跳跃
 function MouseControlCamera(isOpen)//cesiumContainer为容器id
-{
+{                                       
     var canvas = viewer.canvas;
     var handler = new Cesium.ScreenSpaceEventHandler(canvas);
     if(isOpen)
@@ -100,10 +100,6 @@ function MouseControlCamera(isOpen)//cesiumContainer为容器id
     else
     {
         RestoreDefaultSettings();
-        handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-        document.removeEventListener('keydown');
-        document.removeEventListener('keyup');
-        this.lviewer.clock.onTick.removeEventListener();
     }
 }
 function MouseControlCameradirection (mousePosition)
@@ -304,7 +300,7 @@ function KeyboardControlPerspective()
             flags[flagName] = false;
         }
     }, false);
-    this.lviewer.clock.onTick.addEventListener(function(clock) {
+    this.viewer.clock.onTick.addEventListener(function(clock) {
             var camera = viewer.camera;
            // var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
             var moveRate = 5;
