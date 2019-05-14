@@ -104,8 +104,10 @@ function MouseControlCamera(isOpen)//cesiumContainer为容器id
     }
 }
 var loop = null;
+var mousePositionxy = null;
 function MouseControlCameradirection (mousePosition)
 {
+    mousePositionxy = mousePosition;
     clearInterval(loop);
     var width = this.viewer.canvas.clientWidth;
     var height = this.viewer.canvas.clientHeight;
@@ -158,6 +160,14 @@ function MouseControlCameradirection (mousePosition)
  }
 function canvasRight()
 {
+    var width = this.viewer.canvas.clientWidth;
+    var height = this.viewer.canvas.clientHeight;
+    var cameraPostionOnScreen = new Cesium.Cartesian2(width/2, height/2);
+    var assumeDistance = 1000;
+    var headingAngle;////偏航角
+    var x = mousePositionxy.x - cameraPostionOnScreen.x;
+    var sinx = x/assumeDistance;
+    headingAngle = Math.asin(sinx);
     var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.heading) + 1
     if(degrees>360)
     {
@@ -175,9 +185,18 @@ function canvasRight()
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
+       this.Oldheading = this.Oldheading - headingAngle;
 }
 function canvasLeft()
 {
+    var width = this.viewer.canvas.clientWidth;
+    var height = this.viewer.canvas.clientHeight;
+    var cameraPostionOnScreen = new Cesium.Cartesian2(width/2, height/2);
+    var assumeDistance = 1000;
+    var headingAngle;////偏航角
+    var x = mousePositionxy.x - cameraPostionOnScreen.x;
+    var sinx = x/assumeDistance;
+    headingAngle = Math.asin(sinx);
     var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.heading) - 1
     if(degrees>360)
     {
@@ -195,9 +214,18 @@ function canvasLeft()
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
+    this.Oldheading = this.Oldheading - headingAngle;
 }
 function canvasUp()
 {
+    var width = this.viewer.canvas.clientWidth;
+    var height = this.viewer.canvas.clientHeight;
+    var cameraPostionOnScreen = new Cesium.Cartesian2(width/2, height/2);
+    var assumeDistance = 1000;
+    var pitchAngle;//俯仰角    
+    var y = mousePositionxy.y - cameraPostionOnScreen.y;
+    var siny = y/assumeDistance; 
+    pitchAngle = Math.asin(siny);
     var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.pitch) + 1
     this.Oldpitch = Cesium.Math.toRadians(degrees);//this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
@@ -207,9 +235,18 @@ function canvasUp()
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
+    this.Oldpitch = this.Oldpitch + pitchAngle;
 }
 function canvasDown()
 {
+    var width = this.viewer.canvas.clientWidth;
+    var height = this.viewer.canvas.clientHeight;
+    var cameraPostionOnScreen = new Cesium.Cartesian2(width/2, height/2);
+    var assumeDistance = 1000;
+    var pitchAngle;//俯仰角    
+    var y = mousePositionxy.y - cameraPostionOnScreen.y;
+    var siny = y/assumeDistance; 
+    pitchAngle = Math.asin(siny);
     var degrees = Cesium.Math.toDegrees(this.viewer.scene.camera.pitch) - 1
     this.Oldpitch = Cesium.Math.toRadians(degrees);//this.viewer.scene.camera.pitch - 0.01;
     this.viewer.scene.camera.setView({
@@ -219,6 +256,7 @@ function canvasDown()
             roll : 0//正东方向为轴的旋转角度   翻滚角
         }
        });
+    this.Oldpitch = this.Oldpitch + pitchAngle;
 }
 function functionMainForCamera(mousePosition,Oldheading,Oldpitch)
 {
