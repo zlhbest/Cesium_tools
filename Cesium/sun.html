@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>日照分析</title>
+    <!-- <link rel="stylesheet" href="../../Build/Plugins/assets/bucket.css" /> -->
+    <link rel="stylesheet" href="../Cesium/Widgets/widgets.css" />
+    <script src="../Cesium/Cesium.js"></script>
+</head>
+<body>
+<style>
+    #toolbar {
+        background: rgba(42, 42, 42, 0.8);
+        padding: 10px;
+        border-radius: 4px;
+        top: 10px;
+        position: absolute;
+        z-index: 999;
+    }
+    #toolbar input {
+        vertical-align: middle;
+    }
+</style>
+<div id="cesiumContainer" class="fullSize"></div>
+<div id="toolbar" style="width: 300px">
+    <button id="analyze">日照分析</button><br><br>
+    <button id="cubicStyle">切换立方体模式</button>
+    <button id="pointStyle">切换点模式</button>
+    <button id="clean">清理</button><br><br>
+    <label>效果过滤</label>
+    <div style="border:1px solid #1d75b3;padding: 10px">
+        <label>最小日照率：</label>
+        <input id="minRate" type="number" min="0.0" max="1.0" step="0.01" value="0.0"><br>
+        <label>最大日照率：</label>
+        <input id="maxRate" type="number" min="0.0" max="1.0" step="0.01" value="1.0">
+    </div><br/><br/>
+    <label>参数调整</label>
+    <div style="border:1px solid #1d75b3;padding: 10px">
+        <label>分析日期：</label>
+        <input id="dateSet" type="date" value="2018-11-11"/><br><br>
+        <label>开始时刻：</label>
+        <select id="startTime">
+            <option value="0">0:00</option>
+            <option value="3">3:00</option>
+            <option value="6">6:00</option>
+            <option value="9" selected>9:00</option>
+            <option value="12">12:00</option>
+            <option value="15">15:00</option>
+            <option value="18">18:00</option>
+            <option value="21">21:00</option>
+            <option value="24">24:00</option>
+        </select>
+        <label>结束时刻：</label>
+        <select id="endTime">
+            <option value="0">0:00</option>
+            <option value="3">3:00</option>
+            <option value="6">6:00</option>
+            <option value="9">9:00</option>
+            <option value="12" selected>12:00</option>
+            <option value="15">15:00</option>
+            <option value="18">18:00</option>
+            <option value="21">21:00</option>
+            <option value="24">24:00</option>
+        </select><br><br>
+        <label>底部高程(米)：</label>
+        <input id="bottomHeight"  value="40"/><br>
+        <label>拉伸高程(米)：</label>
+        <input id="extrudeHeight" value="30"/><br>
+    </div>
+</div>
+<script>
+    function startup(Cesium) {
+        'use strict';
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            shadows : true,
+            selectionIndicator : false
+        });
+
+        var scene = viewer.scene;
+        var camera = scene.camera;
+        var geoPoints = [];
+        var linePoints = [];
+        var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+        var google = new Cesium.UrlTemplateImageryProvider({
+            url : 'http://mt0.google.cn/vt/lyrs=s&hl=zh-CN&x={x}&y={y}&z={z}',
+            tilingScheme : new Cesium.WebMercatorTilingScheme(),
+            maximumLevel : 20
+        });
+        viewer.imageryLayers.addImageryProvider(google);
+
+        //加载数据
+        var tileset = new Cesium.DE3DTileset({
+            url: 'https://dataearth-preset.bd.bcebos.com/system_resource/xinghan/model.json',
+           // url: '../Apps/SampleData/huaian/model.json',
+            shadows:Cesium.ShadowMode.ENABLED,
+            viewer:viewer
+        });
+        viewer.tilesetLayers.add(tileset);
+        viewer.flyTo(tileset);
+
+        //创建日照分析对象
+        var sunshineAnalyze = new Cesium.DESunshineAnalyze(viewer);
+        viewer.scene.primitives.add(sunshineAnalyze);
+        sunshineAnalyze.bottomElevation = 40;
+        sunshineAnalyze.extendElevation = 30;
+        var start = false;
+        document.getElementById("analyze").onclick = function(){
+            geoPoints.length = 0;
+            linePoints.length = 0;
+            viewer.entities.add({
+                polyline : {
+                    positions : new Cesium.CallbackProperty(function () {
+                        return linePoints;
+                    }, false),
+                    width : 5,
+                    material : new Cesium.PolylineGlowMaterialProperty({
+                        glowPower : 0.2,
+                        color : Cesium.Color.YELLOW
+                    })
+                }
+            });
+            handler.setInputAction(function(event) {
+                start = true;
+                var CarPosition = scene.pickPosition(event.position);
+                var cartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(CarPosition);
+                geoPoints.push(Cesium.Math.toDegrees(cartographic.longitude));
+                geoPoints.push(Cesium.Math.toDegrees(cartographic.latitude));
+                linePoints.push(CarPosition);
+                viewer.entities.add({
+                    position : CarPosition,
+                    point : {
+                        color : Cesium.Color.RED,
+                        pixelSize : 8
+                    }
+                })
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+            var index = 0;
+            handler.setInputAction(function(event) {
+                if(start){
+                    var newPosition = scene.pickPosition(event.endPosition);
+                    if(index < 1){
+                        index ++ ;
+                        linePoints.push(newPosition);
+                    }else{
+                        linePoints.pop();
+                        linePoints.pop();
+                        linePoints.push(newPosition);
+                    }
+                    linePoints.push(linePoints[0]);
+                }
+            }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+            handler.setInputAction(function(event) {
+                //日照分析时间段
+                var startTime = new Date("2018-11-11");
+                startTime.setHours(8);
+                var endTime = new Date("2018-11-11");
+                endTime.setHours(12);
+
+                sunshineAnalyze.startTime = startTime;
+                sunshineAnalyze.endTime = endTime;
+                sunshineAnalyze.regionPoints = geoPoints;
+                sunshineAnalyze.analyze();
+
+                viewer.entities.removeAll();
+                handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+                handler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+            }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+        };
+
+        //设置分析结果为立方体的表达方式
+        document.getElementById("cubicStyle").onclick = function(){
+            sunshineAnalyze.isCubicStyle = true;
+        };
+
+        //设置最终结果为点的方式
+        document.getElementById("pointStyle").onclick = function(){
+            sunshineAnalyze.isCubicStyle = false;
+        };
+
+        //清理日照分析，释放内存
+        document.getElementById("clean").onclick = function(){
+            sunshineAnalyze.clean();
+            viewer.entities.removeAll();
+        };
+
+        //根据日照率过滤，设置过滤的下限
+        document.getElementById("minRate").onchange = function(){
+            var lower = parseFloat(this.value);
+            sunshineAnalyze.lowerLimit = lower;
+        };
+
+        //设置过滤的上限
+        document.getElementById("maxRate").onchange = function(){
+            sunshineAnalyze.upperLimit = parseFloat(this.value);
+        };
+
+        //设置日照分析开始时间
+        document.getElementById("startTime").onchange = function(){
+            var startTime = new Date(document.getElementById("dateSet").value);
+            startTime.setHours(parseFloat(this.value));
+            sunshineAnalyze.startTime = startTime;
+            sunshineAnalyze.refresh();
+        };
+
+        //设置日照分析结束时间
+        document.getElementById("endTime").onchange = function(){
+            var endTime = new Date(document.getElementById("dateSet").value);
+            endTime.setHours(parseFloat(this.value));
+            sunshineAnalyze.endTime = endTime;
+            sunshineAnalyze.refresh();
+        };
+
+        //设置日照分析底部高程
+        document.getElementById("bottomHeight").onchange = function(){
+            sunshineAnalyze.bottomElevation = parseFloat(this.value);
+            sunshineAnalyze.refresh();
+        };
+
+        //设置日照分析拉伸高程
+        document.getElementById("extrudeHeight").onchange = function(){
+            sunshineAnalyze.extendElevation = parseFloat(this.value);
+            sunshineAnalyze.refresh();
+        };
+    }
+    if (typeof Cesium !== 'undefined') {
+        startup(Cesium);
+    } else if (typeof require === 'function') {
+        require(['Cesium'], startup);
+    }
+</script>
+</body>
+</html>
